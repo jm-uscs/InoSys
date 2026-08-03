@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InoSys — Visão Geral</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="assets/estilos.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+  <!-- A sidebar é injetada aqui por assets/sidebar.js.
+       No Django, ela viraria um include: {% include "partials/sidebar.html" %} -->
+  <div id="sidebar-root"></div>
+
+  <main class="conteudo">
+    <div class="container py-4">
+
+    <!-- Cabeçalho -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-outline-primary btn-sm d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarInoSys" aria-controls="sidebarInoSys" aria-label="Abrir menu">
+          <i class="bi bi-list fs-5"></i>
+        </button>
+        <div>
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-1 small">
+            <li class="breadcrumb-item"><a href="selecao.html" class="text-decoration-none">Início</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Visão Geral</li>
+          </ol>
+        </nav>
+        <h1 class="h4 mb-0">Visão Geral</h1>
+        <p class="text-muted small mb-0">Indicadores consolidados de estoque e fretes</p>
+        </div>
+      </div>
+
+      <!-- Seletor de período. Django: parâmetro de período da query -->
+      <select class="form-select form-select-sm w-auto" id="seletorPeriodo" aria-label="Período">
+        <option value="7">Últimos 7 dias</option>
+        <option value="30" selected>Últimos 30 dias</option>
+        <option value="90">Últimos 90 dias</option>
+      </select>
+    </div>
+
+    <!-- Indicadores (KPIs).
+         Django: valores calculados no backend e injetados com {{ }} -->
+    <div class="row g-3 mb-4">
+
+      <div class="col-12 col-md-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <p class="text-muted small mb-1">Materiais com estoque baixo</p>
+                <p class="display-6 fw-bold mb-0">3</p>
+              </div>
+              <i class="bi bi-exclamation-triangle fs-2 text-danger"></i>
+            </div>
+            <a href="estoque.html" class="small text-decoration-none">Ver estoque <i class="bi bi-arrow-right"></i></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <p class="text-muted small mb-1">Entregas pendentes</p>
+                <p class="display-6 fw-bold mb-0">5</p>
+              </div>
+              <i class="bi bi-truck fs-2 text-primary"></i>
+            </div>
+            <a href="fretes.html" class="small text-decoration-none">Ver fretes <i class="bi bi-arrow-right"></i></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <p class="text-muted small mb-1">Entregas com divergência no período</p>
+                <p class="display-6 fw-bold mb-0">2</p>
+              </div>
+              <i class="bi bi-cash-coin fs-2 text-warning"></i>
+            </div>
+            <a href="fretes.html" class="small text-decoration-none">Ver divergências <i class="bi bi-arrow-right"></i></a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gráficos (placeholders).
+         A biblioteca de gráficos ainda não está definida; os blocos abaixo
+         são apenas representações estáticas do que será gerado. -->
+    <div class="row g-3 mb-4">
+
+      <!-- Gráfico de barras: entradas e saídas de estoque -->
+      <div class="col-12 col-lg-6">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <h2 class="h6 mb-0">Entradas e saídas de estoque</h2>
+            <p class="text-muted small mb-3">Últimos 30 dias</p>
+
+            <div class="chart-barras">
+              <!-- Django: barras geradas dinamicamente ({{ entrada.material }}...) -->
+              <div class="grupo-barras" title="Semana 1">
+                <div class="barra" style="height: 42%;" title="Entradas: 12"></div>
+                <div class="barra barra-saida" style="height: 30%;" title="Saídas: 8"></div>
+              </div>
+              <div class="grupo-barras" title="Semana 2">
+                <div class="barra" style="height: 60%;" title="Entradas: 18"></div>
+                <div class="barra barra-saida" style="height: 22%;" title="Saídas: 6"></div>
+              </div>
+              <div class="grupo-barras" title="Semana 3">
+                <div class="barra" style="height: 38%;" title="Entradas: 11"></div>
+                <div class="barra barra-saida" style="height: 55%;" title="Saídas: 15"></div>
+              </div>
+              <div class="grupo-barras" title="Semana 4">
+                <div class="barra" style="height: 50%;" title="Entradas: 15"></div>
+                <div class="barra barra-saida" style="height: 35%;" title="Saídas: 9"></div>
+              </div>
+            </div>
+
+            <div class="mt-2 d-flex gap-3">
+              <span class="item-legenda"><span class="quadrado-legenda" style="background-color: #0d6efd;"></span>Entradas</span>
+              <span class="item-legenda"><span class="quadrado-legenda" style="background-color: #6c757d;"></span>Saídas</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gráfico de linha: valor sugerido x cobrado -->
+      <div class="col-12 col-lg-6">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <h2 class="h6 mb-0">Fretes — valor sugerido × cobrado</h2>
+            <p class="text-muted small mb-3">Últimos 30 dias</p>
+
+            <!-- Placeholder SVG do gráfico de linha -->
+            <svg viewBox="0 0 400 160" class="w-100" role="img" aria-label="Gráfico de linha: valor sugerido versus valor cobrado">
+              <g stroke="#dee2e6" stroke-width="1">
+                <line x1="0" y1="30" x2="400" y2="30"></line>
+                <line x1="0" y1="70" x2="400" y2="70"></line>
+                <line x1="0" y1="110" x2="400" y2="110"></line>
+                <line x1="0" y1="150" x2="400" y2="150"></line>
+              </g>
+              <polyline points="0,140 57,120 114,100 171,115 228,85 285,95 342,70 400,60"
+                        fill="none" stroke="#0d6efd" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></polyline>
+              <polyline points="0,135 57,125 114,105 171,120 228,90 285,98 342,75 400,68"
+                        fill="none" stroke="#6c757d" stroke-width="2" stroke-dasharray="5 4" stroke-linejoin="round" stroke-linecap="round"></polyline>
+            </svg>
+
+            <div class="mt-2 d-flex gap-3">
+              <span class="item-legenda"><i class="bi bi-dash-lg text-primary fs-5"></i>Valor sugerido</span>
+              <span class="item-legenda"><i class="bi bi-dash-lg text-secondary fs-5"></i>Valor cobrado</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Acesso rápido aos relatórios.
+         Django: telas de relatório (PDF/CSV) ainda não estão no escopo;
+         por ora os atalhos apontam para os dashboards correspondentes. -->
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h2 class="h6 mb-3">Relatórios</h2>
+        <div class="d-flex flex-wrap gap-2">
+          <a href="estoque.html" class="btn btn-outline-primary">
+            <i class="bi bi-clipboard-data me-1"></i>Relatórios de estoque
+          </a>
+          <a href="fretes.html" class="btn btn-outline-primary">
+            <i class="bi bi-truck me-1"></i>Relatórios de fretes
+          </a>
+        </div>
+        <p class="text-muted small mt-3 mb-0">
+          Em produção, essas ações abrirão telas dedicadas de relatórios com exportação. Por enquanto apontam para os dashboards.
+        </p>
+      </div>
+    </div>
+    </div>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/sidebar.js"></script>
+  <script>
+    // Seletor de período (mockup): apenas atualiza os rótulos dos gráficos.
+    document.getElementById('seletorPeriodo').addEventListener('change', function (e) {
+      var dias = e.target.value;
+      var rotulo = dias === '7' ? 'Últimos 7 dias' : dias === '30' ? 'Últimos 30 dias' : 'Últimos 90 dias';
+      // Django: recarregaria os indicadores e gráficos para o período escolhido.
+      document.querySelectorAll('.text-muted.small.mb-3').forEach(function (el) { el.textContent = rotulo; });
+    });
+  </script>
+</body>
+</html>

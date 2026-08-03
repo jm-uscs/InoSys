@@ -1,0 +1,129 @@
+/* ============================================================
+   InoSys — Mockup de média fidelidade
+   Sidebar de navegação (renderizada por assets/sidebar.js)
+
+   A sidebar substitui a navbar superior. Em telas largas (>= lg)
+   ela fica fixa à esquerda; em telas menores vira um menu
+   retrátil (offcanvas) aberto pelo botão hambúrguer.
+   ============================================================ */
+
+/* Largura da sidebar como offcanvas (mobile) */
+.sidebar-off {
+  --bs-offcanvas-width: 270px;
+}
+
+/* Caixa interna com o fundo escuro e o conteúdo da sidebar.
+   No mobile, preenche o offcanvas; no desktop, fica fixa. */
+.sidebar-caixa {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: #0d6efd; /* azul primário, mesma identidade da navbar antiga */
+  color: #fff;
+  padding: 1rem 0.75rem;
+}
+
+/* Marca no topo da sidebar */
+.sidebar-marca {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.15rem;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.5rem;
+  text-decoration: none;
+}
+
+.sidebar-marca:hover {
+  color: #fff;
+}
+
+/* Rótulos de seção */
+.sidebar-rotulo {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 1rem 0 0.35rem 0.25rem;
+}
+
+/* Itens de navegação */
+.sidebar-caixa .nav-link {
+  color: rgba(255, 255, 255, 0.78);
+  border-radius: 0.5rem;
+  padding: 0.55rem 0.75rem;
+  margin-bottom: 0.15rem;
+}
+
+.sidebar-caixa .nav-link:hover {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+.sidebar-caixa .nav-link.active {
+  color: #0d6efd;
+  background-color: #fff;
+  font-weight: 600;
+}
+
+/* Bloco de usuário (rodapé da sidebar) */
+.sidebar-usuario {
+  padding: 0.9rem 0.5rem 0;
+  margin-top: 1rem;
+}
+
+/* Texto pequeno auxiliar */
+.pequeno {
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+/* ---- Dropdown de troca de perfil na sidebar ------------------ */
+.sidebar-perfil .dropdown-toggle::after {
+  display: none; /* usa o chevron do ícone bi-chevron-down */
+}
+
+.sidebar-perfil .dropdown-menu {
+  min-width: 100%;
+}
+
+.sidebar-perfil .dropdown-item .check-perfil {
+  visibility: hidden; /* ocupa espaço, sem deslocar o texto */
+}
+
+.sidebar-perfil .dropdown-item.atual .check-perfil {
+  visibility: visible;
+}
+
+.sidebar-perfil .dropdown-item.atual {
+  font-weight: 600;
+}
+
+/* Desktop (>= lg): sidebar fixa e conteúdo deslocado */
+@media (min-width: 992px) {
+  .sidebar-off.offcanvas-lg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 270px;
+    transform: none; /* anula translateX(-100%) do .offcanvas-start */
+    visibility: visible; /* anula visibility:hidden do .offcanvas */
+    z-index: 1040;
+  }
+
+  /* Preenche a altura para o fundo escuro chegar até o fim */
+  .sidebar-off.offcanvas-lg .offcanvas-body {
+    flex-grow: 1;
+  }
+
+  .sidebar-caixa {
+    height: 100%;
+  }
+
+  .conteudo {
+    margin-left: 270px;
+  }
+}

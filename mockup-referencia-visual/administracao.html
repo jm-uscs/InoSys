@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InoSys — Administração</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="assets/estilos.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+  <!-- A sidebar é injetada aqui por assets/sidebar.js.
+       No Django, ela viraria um include: {% include "partials/sidebar.html" %} -->
+  <div id="sidebar-root"></div>
+
+  <main class="conteudo">
+    <div class="container py-4">
+
+    <!-- Cabeçalho -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-outline-primary btn-sm d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarInoSys" aria-controls="sidebarInoSys" aria-label="Abrir menu">
+          <i class="bi bi-list fs-5"></i>
+        </button>
+        <div>
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-1 small">
+            <li class="breadcrumb-item"><a href="selecao.html" class="text-decoration-none">Início</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Administração</li>
+          </ol>
+        </nav>
+        <h1 class="h4 mb-0">Administração</h1>
+        <p class="text-muted small mb-0">Usuários, log de ações e dados pessoais</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mensagem de confirmação (mockup). Django: messages framework -->
+    <div id="alertaAdmin" class="alert alert-success d-none alert-dismissible fade show" role="alert">
+      <span id="textoAlertaAdmin"></span>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+    </div>
+
+    <!-- Abas. Django: tabs fixas nesta tela (ou separadas por views) -->
+    <ul class="nav nav-tabs mb-3" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="tab-usuarios-tab" data-bs-toggle="tab" data-bs-target="#tabUsuarios" type="button" role="tab" aria-controls="tabUsuarios" aria-selected="true">
+          <i class="bi bi-people me-1"></i>Usuários
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-entregadores-tab" data-bs-toggle="tab" data-bs-target="#tabEntregadores" type="button" role="tab" aria-controls="tabEntregadores" aria-selected="false">
+          <i class="bi bi-person-badge me-1"></i>Entregadores
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-log-tab" data-bs-toggle="tab" data-bs-target="#tabLog" type="button" role="tab" aria-controls="tabLog" aria-selected="false">
+          <i class="bi bi-journal-text me-1"></i>Log de ações
+        </button>
+      </li>
+    </ul>
+
+    <div class="tab-content">
+
+      <!-- ============================================================
+           ABA: USUÁRIOS
+           Django: {% for usuario in usuarios %} ... {% endfor %} -->
+      <div class="tab-pane fade show active" id="tabUsuarios" role="tabpanel" aria-labelledby="tab-usuarios-tab">
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <p class="text-muted small mb-0">Contas de acesso ao sistema</p>
+          <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalUsuario">
+            <i class="bi bi-person-plus me-1"></i>Cadastrar novo usuário
+          </button>
+        </div>
+
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle" id="tabelaUsuarios">
+                <thead class="table-light">
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Nome</th>
+                    <th scope="col">Usuário</th>
+                    <th scope="col">Perfil</th>
+                    <th scope="col">Status</th>
+                    <th scope="col" class="text-end">Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Django: bloco dentro do loop {% for %} -->
+                  <tr data-usuario="carlos" data-proprio="true">
+                    <td>1</td>
+                    <td class="col-nome">Carlos Andrade</td>
+                    <td>carlos</td>
+                    <td><span class="badge rounded-pill text-bg-dark">Administrador</span></td>
+                    <td><span class="badge rounded-pill text-bg-success">Ativo</span></td>
+                    <td class="text-end">
+                      <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalBloqueio" title="Não é possível desativar a própria conta">
+                        <i class="bi bi-person-x"></i>
+                      </button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary" disabled title="Anonimizar disponível apenas para contas desativadas">
+                        <i class="bi bi-eraser"></i>
+                      </button>
+                    </td>
+                  </tr>
+
+                  <tr data-usuario="mariana">
+                    <td>2</td>
+                    <td class="col-nome">Mariana Lima</td>
+                    <td>mariana</td>
+                    <td><span class="badge rounded-pill text-bg-primary">Gestor</span></td>
+                    <td><span class="badge rounded-pill text-bg-success">Ativo</span></td>
+                    <td class="text-end">
+                      <button type="button" class="btn btn-sm btn-outline-danger btn-desativar" title="Desativar usuário">
+                        <i class="bi bi-person-x"></i>
+                      </button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary btn-anonimizar" disabled title="Anonimizar disponível apenas para contas desativadas">
+                        <i class="bi bi-eraser"></i>
+                      </button>
+                    </td>
+                  </tr>
+
+                  <tr data-usuario="joao.estoque">
+                    <td>3</td>
+                    <td class="col-nome">João Pereira</td>
+                    <td>joao.estoque</td>
+                    <td><span class="badge rounded-pill text-bg-info text-dark">Operacional de Estoque</span></td>
+                    <td><span class="badge rounded-pill text-bg-success">Ativo</span></td>
+                    <td class="text-end">
+                      <button type="button" class="btn btn-sm btn-outline-danger btn-desativar" title="Desativar usuário">
+                        <i class="bi bi-person-x"></i>
+                      </button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary btn-anonimizar" disabled title="Anonimizar disponível apenas para contas desativadas">
+                        <i class="bi bi-eraser"></i>
+                      </button>
+                    </td>
+                  </tr>
+
+                  <tr data-usuario="fernanda.fretes">
+                    <td>4</td>
+                    <td class="col-nome">Fernanda Costa</td>
+                    <td>fernanda.fretes</td>
+                    <td><span class="badge rounded-pill text-bg-info text-dark">Operacional de Fretes</span></td>
+                    <td><span class="badge rounded-pill text-bg-secondary">Desativado</span></td>
+                    <td class="text-end">
+                      <button type="button" class="btn btn-sm btn-outline-success btn-reativar" title="Reativar usuário">
+                        <i class="bi bi-person-check"></i>
+                      </button>
+                      <button type="button" class="btn btn-sm btn-outline-danger btn-anonimizar" title="Anonimizar dados pessoais">
+                        <i class="bi bi-eraser"></i>
+                      </button>
+                    </td>
+                  </tr>
+
+                  <tr data-usuario="rafael">
+                    <td>5</td>
+                    <td class="col-nome">Rafael Souza</td>
+                    <td>rafael</td>
+                    <td><span class="badge rounded-pill text-bg-primary">Gestor</span></td>
+                    <td><span class="badge rounded-pill text-bg-success">Ativo</span></td>
+                    <td class="text-end">
+                      <button type="button" class="btn btn-sm btn-outline-danger btn-desativar" title="Desativar usuário">
+                        <i class="bi bi-person-x"></i>
+                      </button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary btn-anonimizar" disabled title="Anonimizar disponível apenas para contas desativadas">
+                        <i class="bi bi-eraser"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Paginação (20 itens por página) -->
+            <nav aria-label="Paginação" class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+              <p class="text-muted small mb-0">Mostrando 1–5 de 12 usuários</p>
+              <ul class="pagination pagination-sm mb-0">
+                <li class="page-item disabled"><a class="page-link" href="#" tabindex="-1" aria-disabled="true">Anterior</a></li>
+                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                <li class="page-item"><a class="page-link" href="#">Próxima</a></li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================
+           ABA: ENTREGADORES (dados pessoais para anonimização)
+           Django: {% for entregador in entregadores %} ... {% endfor %} -->
+      <div class="tab-pane fade" id="tabEntregadores" role="tabpanel" aria-labelledby="tab-entregadores-tab">
+        <p class="text-muted small mb-3">
+          A anonimização de dados pessoais está disponível apenas para entregadores já desativados.
+        </p>
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle" id="tabelaEntregadores">
+                <thead class="table-light">
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Entregador</th>
+                    <th scope="col">Telefone</th>
+                    <th scope="col">Veículo / Placa</th>
+                    <th scope="col">Status</th>
+                    <th scope="col" class="text-end">Ação</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr data-entregador="joao">
+                    <td>1</td>
+                    <td class="col-nome-entregador">João Pereira</td>
+                    <td class="col-telefone">(11) 98765-4321</td>
+                    <td class="col-veiculo">Fiorino AAA-1B23</td>
+                    <td><span class="badge rounded-pill text-bg-success">Ativo</span></td>
+                    <td class="text-end">
+                      <button type="button" class="btn btn-sm btn-outline-secondary" disabled title="Anonimizar disponível apenas para entregadores desativados">
+                        <i class="bi bi-eraser"></i>
+                      </button>
+                    </td>
+                  </tr>
+                  <tr data-entregador="maria">
+                    <td>2</td>
+                    <td class="col-nome-entregador">Maria Souza</td>
+                    <td class="col-telefone">(11) 91234-5678</td>
+                    <td class="col-veiculo">Fiat Strada BBB-2C34</td>
+                    <td><span class="badge rounded-pill text-bg-secondary">Desativado</span></td>
+                    <td class="text-end">
+                      <button type="button" class="btn btn-sm btn-outline-danger btn-anonimizar-entregador" title="Anonimizar dados pessoais">
+                        <i class="bi bi-eraser"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================
+           ABA: LOG DE AÇÕES
+           Django: {% for log in logs %} ... {% endfor %} com paginação -->
+      <div class="tab-pane fade" id="tabLog" role="tabpanel" aria-labelledby="tab-log-tab">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Usuário</th>
+                    <th scope="col">Ação</th>
+                    <th scope="col">Data / Hora</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Django: bloco dentro do loop {% for %} -->
+                  <tr><td>1</td><td>Carlos Andrade</td><td>Cadastrou o usuário "mariana"</td><td>02/08/2026 09:12</td></tr>
+                  <tr><td>2</td><td>Maria Souza</td><td>Registrou entrega #045</td><td>02/08/2026 10:05</td></tr>
+                  <tr><td>3</td><td>João Pereira</td><td>Registrou saída de 4 "Placa Cimento 1,20m x 2,40m"</td><td>01/08/2026 16:40</td></tr>
+                  <tr><td>4</td><td>Carlos Andrade</td><td>Desativou o usuário "fernanda.fretes"</td><td>31/07/2026 14:22</td></tr>
+                  <tr><td>5</td><td>Mariana Lima</td><td>Gerou relatório de fretes (julho)</td><td>30/07/2026 11:08</td></tr>
+                  <tr><td>6</td><td>João Pereira</td><td>Cadastrou material "Tinta acrílica branca"</td><td>29/07/2026 09:55</td></tr>
+                  <tr><td>7</td><td>Maria Souza</td><td>Registrou entrega #044</td><td>28/07/2026 15:31</td></tr>
+                  <tr><td>8</td><td>Carlos Andrade</td><td>Anonimizou dados de "Fernanda Costa"</td><td>27/07/2026 17:02</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Paginação (20 itens por página) -->
+            <nav aria-label="Paginação" class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+              <p class="text-muted small mb-0">Mostrando 1–8 de 126 ações</p>
+              <ul class="pagination pagination-sm mb-0">
+                <li class="page-item disabled"><a class="page-link" href="#" tabindex="-1" aria-disabled="true">Anterior</a></li>
+                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                <li class="page-item"><a class="page-link" href="#">Próxima</a></li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    </div>
+  </main>
+
+  <!-- ============================================================
+       MODAL: Cadastro de usuário
+       Django: form UsuarioForm (nome, login, perfil, status).
+       A senha temporária é gerada pelo backend e exibida na
+       tela de confirmação (sem envio por e-mail).
+       ============================================================ -->
+  <div class="modal fade" id="modalUsuario" tabindex="-1" aria-labelledby="tituloModalUsuario" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <form id="formUsuario">
+          <div class="modal-header">
+            <h5 class="modal-title" id="tituloModalUsuario">Cadastrar novo usuário</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="usuNome" class="form-label">Nome completo <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="usuNome" required>
+            </div>
+            <div class="mb-3">
+              <label for="usuLogin" class="form-label">Usuário (login) <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="usuLogin" autocomplete="off" placeholder="Ex.: joao.estoque" required>
+            </div>
+            <div class="mb-3">
+              <label for="usuPerfil" class="form-label">Perfil <span class="text-danger">*</span></label>
+              <select class="form-select" id="usuPerfil" required>
+                <option value="">Selecione o perfil...</option>
+                <option value="operacional-estoque">Operacional de Estoque</option>
+                <option value="operacional-fretes">Operacional de Fretes</option>
+                <option value="gestor">Gestor</option>
+                <option value="administrador">Administrador</option>
+              </select>
+            </div>
+            <div class="form-text">
+              Ao confirmar, uma <strong>senha temporária</strong> será gerada e exibida uma única vez nesta tela. Não há envio por e-mail.
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Confirmar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       MODAL: Confirmação de usuário criado — exibição da senha
+       temporária (uma única vez)
+       ============================================================ -->
+  <div class="modal fade" id="modalSenha" tabindex="-1" aria-labelledby="tituloModalSenha" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="tituloModalSenha">Usuário criado com sucesso</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <p>
+            O usuário <strong id="senhaUsuarioNome"></strong> foi criado.
+            Esta é a <strong>senha temporária</strong> de acesso. Ela será exibida
+            <strong>uma única vez</strong> e não pode ser recuperada depois.
+          </p>
+          <div class="border rounded p-3 text-center bg-light">
+            <code class="fs-4 fw-bold" id="senhaTemporaria"></code>
+          </div>
+          <div class="alert alert-warning mt-3 mb-0 small">
+            <i class="bi bi-exclamation-triangle me-1"></i>
+            Anote ou copie agora. Não há envio de senha por e-mail neste sistema.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
+            <i class="bi bi-clipboard-check me-1"></i>Copiei, vou repassar ao usuário
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       MODAL: Bloqueio de desativação da própria conta
+       ============================================================ -->
+  <div class="modal fade" id="modalBloqueio" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+      <div class="modal-content">
+        <div class="modal-body text-center p-4">
+          <i class="bi bi-shield-exclamation fs-1 text-warning"></i>
+          <p class="mb-0 mt-2">Você não pode desativar a própria conta.</p>
+        </div>
+        <div class="modal-footer justify-content-center">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Entendi</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       MODAL: Confirmação de anonimização de dados pessoais
+       ============================================================ -->
+  <div class="modal fade" id="modalAnonimizar" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Anonimizar dados pessoais</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <p>
+            Esta ação substitui os dados pessoais (<span id="anonimizarAlvo"></span>) por
+            valores anônimos e é <strong>irreversível</strong>.
+          </p>
+          <div class="alert alert-danger small mb-0">
+            <i class="bi bi-exclamation-triangle me-1"></i>
+            Confirme que deseja prosseguir com a anonimização.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-danger" id="btnConfirmarAnonimizar">
+            <i class="bi bi-eraser me-1"></i>Anonimizar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/sidebar.js"></script>
+  <script>
+    // Referência para a linha que está sendo anonimizada.
+    var linhaAnonimizar = null;
+    var tipoAnonimizar = null;
+
+    // ---- Cadastro de usuário + senha temporária ----
+    document.getElementById('formUsuario').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var nome = document.getElementById('usuNome').value.trim();
+      var login = document.getElementById('usuLogin').value.trim();
+      var perfil = document.getElementById('usuPerfil').value;
+      if (!nome || !login || !perfil) return;
+
+      var senha = gerarSenhaTemporaria(8);
+
+      // Exibe a senha temporária (uma única vez).
+      document.getElementById('senhaUsuarioNome').textContent = nome;
+      document.getElementById('senhaTemporaria').textContent = senha;
+
+      // Fecha o modal de cadastro e abre o de confirmação.
+      bootstrap.Modal.getInstance(document.getElementById('modalUsuario')).hide();
+      var modalSenha = new bootstrap.Modal(document.getElementById('modalSenha'));
+      modalSenha.show();
+
+      // Adiciona o novo usuário à tabela (simulação de persistência).
+      adicionarUsuarioTabela(nome, login, perfil);
+
+      mostrarAlerta('Usuário "' + nome + '" criado. Senha temporária exibida.');
+    });
+
+    function adicionarUsuarioTabela(nome, login, perfil) {
+      var rotulos = {
+        'operacional-estoque': 'Operacional de Estoque',
+        'operacional-fretes': 'Operacional de Fretes',
+        'gestor': 'Gestor',
+        'administrador': 'Administrador'
+      };
+      var badgePerfil = {
+        'operacional-estoque': '<span class="badge rounded-pill text-bg-info text-dark">Operacional de Estoque</span>',
+        'operacional-fretes': '<span class="badge rounded-pill text-bg-info text-dark">Operacional de Fretes</span>',
+        'gestor': '<span class="badge rounded-pill text-bg-primary">Gestor</span>',
+        'administrador': '<span class="badge rounded-pill text-bg-dark">Administrador</span>'
+      };
+      var tbody = document.querySelector('#tabelaUsuarios tbody');
+      var num = tbody.rows.length + 1;
+      var tr = document.createElement('tr');
+      tr.dataset.usuario = login;
+      tr.innerHTML =
+        '<td>' + num + '</td>' +
+        '<td class="col-nome">' + nome + '</td>' +
+        '<td>' + login + '</td>' +
+        '<td>' + badgePerfil[perfil] + '</td>' +
+        '<td><span class="badge rounded-pill text-bg-success">Ativo</span></td>' +
+        '<td class="text-end">' +
+          '<button type="button" class="btn btn-sm btn-outline-danger btn-desativar" title="Desativar usuário"><i class="bi bi-person-x"></i></button> ' +
+          '<button type="button" class="btn btn-sm btn-outline-secondary btn-anonimizar" disabled title="Anonimizar disponível apenas para contas desativadas"><i class="bi bi-eraser"></i></button>' +
+        '</td>';
+      tbody.prepend(tr);
+    }
+
+    function gerarSenhaTemporaria(tamanho) {
+      var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+      var senha = '';
+      for (var i = 0; i < tamanho; i++) {
+        senha += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return senha;
+    }
+
+    // ---- Desativar / reativar / anonimizar usuários ----
+    // Delegação de eventos: os botões são dinâmicos (novos usuários entram na tabela).
+    document.getElementById('tabelaUsuarios').addEventListener('click', function (e) {
+      var botao = e.target.closest('button');
+      if (!botao) return;
+      var tr = botao.closest('tr');
+
+      // Bloqueio de desativação da própria conta (admin logado = carlos).
+      if (botao.classList.contains('btn-desativar') && tr.dataset.proprio === 'true') {
+        // Django: checagem feita no backend (request.user == alvo).
+        new bootstrap.Modal(document.getElementById('modalBloqueio')).show();
+        return;
+      }
+
+      if (botao.classList.contains('btn-desativar')) {
+        if (!confirm('Desativar o usuário "' + tr.cells[2].textContent + '"?')) return;
+        trocarStatusUsuario(tr, false);
+        return;
+      }
+
+      if (botao.classList.contains('btn-reativar')) {
+        trocarStatusUsuario(tr, true);
+        return;
+      }
+
+      if (botao.classList.contains('btn-anonimizar') && !botao.disabled) {
+        tipoAnonimizar = 'usuario';
+        linhaAnonimizar = tr;
+        document.getElementById('anonimizarAlvo').textContent = tr.querySelector('.col-nome').textContent;
+        new bootstrap.Modal(document.getElementById('modalAnonimizar')).show();
+      }
+    });
+
+    function trocarStatusUsuario(tr, ativo) {
+      var status = tr.querySelector('td:nth-child(5)');
+      if (ativo) {
+        status.innerHTML = '<span class="badge rounded-pill text-bg-success">Ativo</span>';
+        var btnReativar = tr.querySelector('.btn-reativar');
+        if (btnReativar) {
+          btnReativar.className = 'btn btn-sm btn-outline-danger btn-desativar';
+          btnReativar.title = 'Desativar usuário';
+          btnReativar.innerHTML = '<i class="bi bi-person-x"></i>';
+        }
+        var btnAnon = tr.querySelector('.btn-anonimizar');
+        if (btnAnon) btnAnon.disabled = true;
+        mostrarAlerta('Usuário reativado.');
+      } else {
+        status.innerHTML = '<span class="badge rounded-pill text-bg-secondary">Desativado</span>';
+        var btnDes = tr.querySelector('.btn-desativar');
+        if (btnDes) {
+          btnDes.className = 'btn btn-sm btn-outline-success btn-reativar';
+          btnDes.title = 'Reativar usuário';
+          btnDes.innerHTML = '<i class="bi bi-person-check"></i>';
+        }
+        var btnAnon2 = tr.querySelector('.btn-anonimizar');
+        if (btnAnon2) btnAnon2.disabled = false;
+        mostrarAlerta('Usuário desativado.');
+      }
+    }
+
+    // ---- Anonimização de entregadores (aba Entregadores) ----
+    document.getElementById('tabelaEntregadores').addEventListener('click', function (e) {
+      var botao = e.target.closest('button');
+      if (!botao || !botao.classList.contains('btn-anonimizar-entregador') || botao.disabled) return;
+      var tr = botao.closest('tr');
+      tipoAnonimizar = 'entregador';
+      linhaAnonimizar = tr;
+      document.getElementById('anonimizarAlvo').textContent = tr.querySelector('.col-nome-entregador').textContent;
+      new bootstrap.Modal(document.getElementById('modalAnonimizar')).show();
+    });
+
+    // Confirmação da anonimização (irreversível).
+    document.getElementById('btnConfirmarAnonimizar').addEventListener('click', function () {
+      var modal = bootstrap.Modal.getInstance(document.getElementById('modalAnonimizar'));
+      modal.hide();
+      if (!linhaAnonimizar) return;
+
+      if (tipoAnonimizar === 'usuario') {
+        linhaAnonimizar.querySelector('.col-nome').textContent = 'Anonimizado';
+        linhaAnonimizar.cells[2].textContent = 'anonimo-' + Math.floor(Math.random() * 9000 + 1000);
+        var status = linhaAnonimizar.querySelector('td:nth-child(5)');
+        status.innerHTML = '<span class="badge rounded-pill text-bg-dark">Anonimizado</span>';
+        var botao = linhaAnonimizar.querySelector('.btn-anonimizar');
+        if (botao) botao.disabled = true;
+        mostrarAlerta('Dados pessoais do usuário anonimizados.');
+      } else {
+        linhaAnonimizar.querySelector('.col-nome-entregador').textContent = 'Anonimizado';
+        linhaAnonimizar.querySelector('.col-telefone').textContent = '—';
+        linhaAnonimizar.querySelector('.col-veiculo').textContent = '—';
+        var statusEnt = linhaAnonimizar.querySelector('td:nth-child(5)');
+        statusEnt.innerHTML = '<span class="badge rounded-pill text-bg-dark">Anonimizado</span>';
+        var botaoEnt = linhaAnonimizar.querySelector('.btn-anonimizar-entregador');
+        if (botaoEnt) botaoEnt.disabled = true;
+        mostrarAlerta('Dados pessoais do entregador anonimizados.');
+      }
+
+      linhaAnonimizar = null;
+    });
+
+    function mostrarAlerta(mensagem) {
+      var alerta = document.getElementById('alertaAdmin');
+      document.getElementById('textoAlertaAdmin').textContent = mensagem;
+      alerta.classList.remove('d-none');
+      setTimeout(function () { alerta.classList.add('d-none'); }, 4000);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InoSys — Dashboard de Estoque</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="assets/estilos.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+  <!-- A sidebar é injetada aqui por assets/sidebar.js.
+       No Django, ela viraria um include: {% include "partials/sidebar.html" %} -->
+  <div id="sidebar-root"></div>
+
+  <main class="conteudo">
+    <div class="container py-4">
+
+    <!-- Cabeçalho da tela -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-outline-primary btn-sm d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarInoSys" aria-controls="sidebarInoSys" aria-label="Abrir menu">
+          <i class="bi bi-list fs-5"></i>
+        </button>
+        <div>
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-1 small">
+            <li class="breadcrumb-item"><a href="selecao.html" class="text-decoration-none">Início</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Estoque</li>
+          </ol>
+        </nav>
+        <h1 class="h4 mb-0">Dashboard de Estoque</h1>
+        <p class="text-muted small mb-0">Materiais cadastrados e movimentações</p>
+        </div>
+      </div>
+
+      <!-- As ações (novo material, movimentações) ficam dentro das abas, abaixo -->
+    </div>
+
+    <!-- Mensagem de confirmação (mockup). Django: mensagens via messages framework -->
+    <div id="alertaEstoque" class="alert alert-success d-none alert-dismissible fade show" role="alert">
+      <span id="textoAlertaEstoque"></span>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+    </div>
+
+    <!-- Abas da tela de estoque.
+         Django: role=tablist vem do template, com a aba ativa em cada view. -->
+    <ul class="nav nav-tabs mb-3" role="tablist">
+      <li class="nav-item">
+        <button class="nav-link active" id="tab-materiais-tab" data-bs-toggle="tab" data-bs-target="#tabMateriais" type="button" role="tab" aria-controls="tabMateriais" aria-selected="true">
+          <i class="bi bi-box-seam me-1"></i>Materiais
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" id="tab-movimentacoes-tab" data-bs-toggle="tab" data-bs-target="#tabMovimentacoes" type="button" role="tab" aria-controls="tabMovimentacoes" aria-selected="false">
+          <i class="bi bi-arrow-left-right me-1"></i>Movimentações
+        </button>
+      </li>
+    </ul>
+
+    <div class="tab-content">
+
+    <!-- Aba: Materiais (cadastro e listagem). -->
+    <div class="tab-pane fade show active" id="tabMateriais" role="tabpanel" aria-labelledby="tab-materiais-tab">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+      <p class="text-muted small mb-0">Materiais cadastrados e valores em estoque.</p>
+      <button type="button" class="btn btn-primary btn-sm" id="btnNovoMaterial" data-bs-toggle="modal" data-bs-target="#modalMaterial" onclick="abrirMaterial('novo')">
+        <i class="bi bi-plus-lg me-1"></i>Novo material
+      </button>
+    </div>
+
+    <!-- Listagem de materiais.
+         Django: tabela renderizada com paginação (20 itens por página).
+         {% for material in page_obj %} ... {{ material.nome }} ... {% endfor %} -->
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle" id="tabelaMateriais">
+            <thead class="table-light">
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Nome</th>
+                <th scope="col">Categoria</th>
+                <th scope="col">Unidade</th>
+                <th scope="col" class="text-end">Qtd. atual</th>
+                <th scope="col" class="text-end">Qtd. mínima</th>
+                <th scope="col" class="text-end">Valor unit.</th>
+                <th scope="col" class="text-end">Valor total</th>
+                <th scope="col">Status</th>
+                <th scope="col" class="text-end">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Django: bloco dentro do loop {% for %} -->
+              <tr data-nome="Placa Drywall 1,20m x 2,40m">
+                <td>1</td>
+                <td class="col-nome">Placa Drywall 1,20m x 2,40m</td>
+                <td class="col-categoria">Painéis</td>
+                <td class="col-unidade">un</td>
+                <td class="col-qtd text-end">40</td>
+                <td class="col-min text-end">25</td>
+                <td class="col-preco text-end">R$ 58,90</td>
+                <td class="col-total text-end">R$ 2.356,00</td>
+                <td class="col-status"><span class="badge rounded-pill text-bg-success">OK</span></td>
+                <td class="text-end">
+                  <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalMaterial" onclick="abrirMaterial('editar', this)" title="Editar material">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                </td>
+              </tr>
+
+              <tr data-nome="Placa Cimento 1,20m x 2,40m">
+                <td>2</td>
+                <td class="col-nome">Placa Cimento 1,20m x 2,40m</td>
+                <td class="col-categoria">Painéis</td>
+                <td class="col-unidade">un</td>
+                <td class="col-qtd text-end">12</td>
+                <td class="col-min text-end">20</td>
+                <td class="col-preco text-end">R$ 74,50</td>
+                <td class="col-total text-end">R$ 894,00</td>
+                <td class="col-status"><span class="badge rounded-pill text-bg-danger">Abaixo do mínimo</span></td>
+                <td class="text-end">
+                  <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalMaterial" onclick="abrirMaterial('editar', this)" title="Editar material">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                </td>
+              </tr>
+
+              <tr data-nome="Perfil Metálico UD 30">
+                <td>3</td>
+                <td class="col-nome">Perfil Metálico UD 30</td>
+                <td class="col-categoria">Estrutura</td>
+                <td class="col-unidade">m</td>
+                <td class="col-qtd text-end">150</td>
+                <td class="col-min text-end">60</td>
+                <td class="col-preco text-end">R$ 9,80</td>
+                <td class="col-total text-end">R$ 1.470,00</td>
+                <td class="col-status"><span class="badge rounded-pill text-bg-success">OK</span></td>
+                <td class="text-end">
+                  <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalMaterial" onclick="abrirMaterial('editar', this)" title="Editar material">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                </td>
+              </tr>
+
+              <tr data-nome="Perfil Metálico UC 35">
+                <td>4</td>
+                <td class="col-nome">Perfil Metálico UC 35</td>
+                <td class="col-categoria">Estrutura</td>
+                <td class="col-unidade">m</td>
+                <td class="col-qtd text-end">0</td>
+                <td class="col-min text-end">50</td>
+                <td class="col-preco text-end">R$ 11,20</td>
+                <td class="col-total text-end">R$ 0,00</td>
+                <td class="col-status"><span class="badge rounded-pill text-bg-danger">Abaixo do mínimo</span></td>
+                <td class="text-end">
+                  <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalMaterial" onclick="abrirMaterial('editar', this)" title="Editar material">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                </td>
+              </tr>
+
+              <tr data-nome="Massa para Drywall">
+                <td>5</td>
+                <td class="col-nome">Massa para Drywall</td>
+                <td class="col-categoria">Acabamento</td>
+                <td class="col-unidade">kg</td>
+                <td class="col-qtd text-end">18</td>
+                <td class="col-min text-end">30</td>
+                <td class="col-preco text-end">R$ 32,00</td>
+                <td class="col-total text-end">R$ 576,00</td>
+                <td class="col-status"><span class="badge rounded-pill text-bg-danger">Abaixo do mínimo</span></td>
+                <td class="text-end">
+                  <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalMaterial" onclick="abrirMaterial('editar', this)" title="Editar material">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                </td>
+              </tr>
+
+              <tr data-nome="Fita para juntas">
+                <td>6</td>
+                <td class="col-nome">Fita para juntas</td>
+                <td class="col-categoria">Acabamento</td>
+                <td class="col-unidade">m</td>
+                <td class="col-qtd text-end">80</td>
+                <td class="col-min text-end">40</td>
+                <td class="col-preco text-end">R$ 1,35</td>
+                <td class="col-total text-end">R$ 108,00</td>
+                <td class="col-status"><span class="badge rounded-pill text-bg-success">OK</span></td>
+                <td class="text-end">
+                  <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalMaterial" onclick="abrirMaterial('editar', this)" title="Editar material">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                </td>
+              </tr>
+
+              <tr data-nome="Parafusos 3,5 x 25 mm">
+                <td>7</td>
+                <td class="col-nome">Parafusos 3,5 x 25 mm</td>
+                <td class="col-categoria">Fixação</td>
+                <td class="col-unidade">cx</td>
+                <td class="col-qtd text-end">4</td>
+                <td class="col-min text-end">2</td>
+                <td class="col-preco text-end">R$ 45,00</td>
+                <td class="col-total text-end">R$ 180,00</td>
+                <td class="col-status"><span class="badge rounded-pill text-bg-success">OK</span></td>
+                <td class="text-end">
+                  <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalMaterial" onclick="abrirMaterial('editar', this)" title="Editar material">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                </td>
+              </tr>
+
+              <tr data-nome="Tinta acrílica branca">
+                <td>8</td>
+                <td class="col-nome">Tinta acrílica branca</td>
+                <td class="col-categoria">Acabamento</td>
+                <td class="col-unidade">L</td>
+                <td class="col-qtd text-end">6</td>
+                <td class="col-min text-end">8</td>
+                <td class="col-preco text-end">R$ 68,00</td>
+                <td class="col-total text-end">R$ 408,00</td>
+                <td class="col-status"><span class="badge rounded-pill text-bg-danger">Abaixo do mínimo</span></td>
+                <td class="text-end">
+                  <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalMaterial" onclick="abrirMaterial('editar', this)" title="Editar material">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                </td>
+              </tr>
+
+              <tr data-nome="Silicone">
+                <td>9</td>
+                <td class="col-nome">Silicone</td>
+                <td class="col-categoria">Acabamento</td>
+                <td class="col-unidade">un</td>
+                <td class="col-qtd text-end">10</td>
+                <td class="col-min text-end">5</td>
+                <td class="col-preco text-end">R$ 15,90</td>
+                <td class="col-total text-end">R$ 159,00</td>
+                <td class="col-status"><span class="badge rounded-pill text-bg-success">OK</span></td>
+                <td class="text-end">
+                  <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalMaterial" onclick="abrirMaterial('editar', this)" title="Editar material">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                </td>
+              </tr>
+
+              <tr data-nome="Porta pronta 80x210">
+                <td>10</td>
+                <td class="col-nome">Porta pronta 80x210</td>
+                <td class="col-categoria">Esquadrias</td>
+                <td class="col-unidade">un</td>
+                <td class="col-qtd text-end">7</td>
+                <td class="col-min text-end">3</td>
+                <td class="col-preco text-end">R$ 189,00</td>
+                <td class="col-total text-end">R$ 1.323,00</td>
+                <td class="col-status"><span class="badge rounded-pill text-bg-success">OK</span></td>
+                <td class="text-end">
+                  <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalMaterial" onclick="abrirMaterial('editar', this)" title="Editar material">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Paginação (20 itens por página).
+             Django: {% for num in page_obj.paginator.page_range %} ... {% endfor %} -->
+        <nav aria-label="Paginação" class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+          <p class="text-muted small mb-0">Mostrando 1–10 de 42 materiais</p>
+          <ul class="pagination pagination-sm mb-0">
+            <li class="page-item disabled"><a class="page-link" href="#" tabindex="-1" aria-disabled="true">Anterior</a></li>
+            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+            <li class="page-item"><a class="page-link" href="#">2</a></li>
+            <li class="page-item"><a class="page-link" href="#">3</a></li>
+            <li class="page-item"><a class="page-link" href="#">Próxima</a></li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+
+    </div>
+
+    <!-- Aba: Movimentações (entradas e saídas)
+         Django: {% for mov in movimentacoes %} ... {{ mov.tipo }} ... {% endfor %} -->
+    <div class="tab-pane fade" id="tabMovimentacoes" role="tabpanel" aria-labelledby="tab-movimentacoes-tab">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <p class="text-muted small mb-0">Histórico de entradas e saídas de materiais.</p>
+        <div class="d-flex flex-wrap gap-2">
+          <button type="button" class="btn btn-outline-success btn-sm" id="btnRegistrarEntrada" data-bs-toggle="modal" data-bs-target="#modalMovimentacao" onclick="definirTipo('entrada')">
+            <i class="bi bi-arrow-down-circle me-1"></i>Registrar entrada
+          </button>
+          <button type="button" class="btn btn-outline-danger btn-sm" id="btnRegistrarSaida" data-bs-toggle="modal" data-bs-target="#modalMovimentacao" onclick="definirTipo('saida')">
+            <i class="bi bi-arrow-up-circle me-1"></i>Registrar saída
+          </button>
+        </div>
+      </div>
+
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle" id="tabelaMovimentacoes">
+              <thead class="table-light">
+                <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">Data</th>
+                  <th scope="col">Tipo</th>
+                  <th scope="col">Material</th>
+                  <th scope="col" class="text-end">Quantidade</th>
+                  <th scope="col">Motivo</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr data-tipo="entrada">
+                  <td>1</td>
+                  <td>01/08/2026</td>
+                  <td><span class="badge rounded-pill text-bg-success"><i class="bi bi-arrow-down-circle me-1"></i>Entrada</span></td>
+                  <td>Placa Drywall 1,20m x 2,40m</td>
+                  <td class="text-end">50</td>
+                  <td>—</td>
+                </tr>
+                <tr data-tipo="saida">
+                  <td>2</td>
+                  <td>01/08/2026</td>
+                  <td><span class="badge rounded-pill text-bg-danger"><i class="bi bi-arrow-up-circle me-1"></i>Saída</span></td>
+                  <td>Placa Drywall 1,20m x 2,40m</td>
+                  <td class="text-end">30</td>
+                  <td>Uso em produção</td>
+                </tr>
+                <tr data-tipo="entrada">
+                  <td>3</td>
+                  <td>02/08/2026</td>
+                  <td><span class="badge rounded-pill text-bg-success"><i class="bi bi-arrow-down-circle me-1"></i>Entrada</span></td>
+                  <td>Perfil Metálico UD 30</td>
+                  <td class="text-end">100</td>
+                  <td>—</td>
+                </tr>
+                <tr data-tipo="saida">
+                  <td>4</td>
+                  <td>02/08/2026</td>
+                  <td><span class="badge rounded-pill text-bg-danger"><i class="bi bi-arrow-up-circle me-1"></i>Saída</span></td>
+                  <td>Massa para Drywall</td>
+                  <td class="text-end">12</td>
+                  <td>Uso em produção</td>
+                </tr>
+                <tr data-tipo="saida">
+                  <td>5</td>
+                  <td>03/08/2026</td>
+                  <td><span class="badge rounded-pill text-bg-danger"><i class="bi bi-arrow-up-circle me-1"></i>Saída</span></td>
+                  <td>Parafusos 3,5 x 25 mm</td>
+                  <td class="text-end">1</td>
+                  <td>Uso em produção</td>
+                </tr>
+                <tr data-tipo="saida">
+                  <td>6</td>
+                  <td>03/08/2026</td>
+                  <td><span class="badge rounded-pill text-bg-danger"><i class="bi bi-arrow-up-circle me-1"></i>Saída</span></td>
+                  <td>Tinta acrílica branca</td>
+                  <td class="text-end">2</td>
+                  <td>Perda ou dano</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <nav aria-label="Paginação de movimentações" class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <p class="text-muted small mb-0" id="contadorMovimentacoes">Mostrando 1–6 de 6 movimentações</p>
+            <ul class="pagination pagination-sm mb-0">
+              <li class="page-item disabled"><a class="page-link" href="#" tabindex="-1" aria-disabled="true">Anterior</a></li>
+              <li class="page-item active"><a class="page-link" href="#">1</a></li>
+              <li class="page-item disabled"><a class="page-link" href="#" tabindex="-1" aria-disabled="true">Próxima</a></li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    </div>
+    </div>
+  </main>
+
+  <!-- ============================================================
+       MODAL: Cadastro / Edição de material
+       Django: form MaterialForm (nome, descrição, unidade, qtd. mínima,
+       categoria, valor unitário)
+       ============================================================ -->
+  <div class="modal fade" id="modalMaterial" tabindex="-1" aria-labelledby="tituloModalMaterial" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <form id="formMaterial">
+          <div class="modal-header">
+            <h5 class="modal-title" id="tituloModalMaterial">Cadastrar material</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="matNome" class="form-label">Nome <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="matNome" required>
+            </div>
+            <div class="mb-3">
+              <label for="matDescricao" class="form-label">Descrição</label>
+              <textarea class="form-control" id="matDescricao" rows="2"></textarea>
+            </div>
+            <div class="row g-3">
+              <div class="col-6">
+                <label for="matUnidade" class="form-label">Unidade de medida <span class="text-danger">*</span></label>
+                <select class="form-select" id="matUnidade" required>
+                  <option value="un">un (unidade)</option>
+                  <option value="m">m (metro)</option>
+                  <option value="m2">m² (metro quadrado)</option>
+                  <option value="m3">m³ (metro cúbico)</option>
+                  <option value="kg">kg (quilograma)</option>
+                  <option value="L">L (litro)</option>
+                  <option value="cx">cx (caixa)</option>
+                  <option value="pc">pc (pacote)</option>
+                </select>
+              </div>
+              <div class="col-6">
+                <label for="matMinima" class="form-label">Quantidade mínima <span class="text-danger">*</span></label>
+                <input type="number" class="form-control" id="matMinima" min="0" step="1" value="1" required>
+                <div class="form-text">Abaixo ou igual a este valor, o item é sinalizado.</div>
+              </div>
+            </div>
+            <div class="row g-3 mt-1">
+              <div class="col-6">
+                <label for="matCategoria" class="form-label">Categoria</label>
+                <select class="form-select" id="matCategoria">
+                  <option value="">Selecione...</option>
+                  <option>Painéis</option>
+                  <option>Estrutura</option>
+                  <option>Acabamento</option>
+                  <option>Fixação</option>
+                  <option>Esquadrias</option>
+                  <option>Outros</option>
+                </select>
+              </div>
+              <div class="col-6">
+                <label for="matValor" class="form-label">Valor unitário (R$) <span class="text-danger">*</span></label>
+                <div class="input-group">
+                  <span class="input-group-text">R$</span>
+                  <input type="number" class="form-control" id="matValor" min="0" step="0.01" required>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Salvar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       MODAL: Registro de movimentação (entrada / saída)
+       Django: form MovimentacaoForm (material, tipo, quantidade,
+       data, motivo — motivo condicional ao tipo saída)
+       ============================================================ -->
+  <div class="modal fade" id="modalMovimentacao" tabindex="-1" aria-labelledby="tituloModalMovimentacao" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <form id="formMovimentacao">
+          <div class="modal-header">
+            <h5 class="modal-title" id="tituloModalMovimentacao">Registrar entrada</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+          </div>
+          <div class="modal-body">
+
+            <!-- Django: {{ form.material }} preenchido com os materiais cadastrados -->
+            <div class="mb-3">
+              <label for="movMaterial" class="form-label">Material <span class="text-danger">*</span></label>
+              <select class="form-select" id="movMaterial" required>
+                <option value="">Selecione um material...</option>
+                <option value="Placa Drywall 1,20m x 2,40m">Placa Drywall 1,20m x 2,40m</option>
+                <option value="Placa Cimento 1,20m x 2,40m">Placa Cimento 1,20m x 2,40m</option>
+                <option value="Perfil Metálico UD 30">Perfil Metálico UD 30</option>
+                <option value="Perfil Metálico UC 35">Perfil Metálico UC 35</option>
+                <option value="Massa para Drywall">Massa para Drywall</option>
+                <option value="Fita para juntas">Fita para juntas</option>
+                <option value="Parafusos 3,5 x 25 mm">Parafusos 3,5 x 25 mm</option>
+                <option value="Tinta acrílica branca">Tinta acrílica branca</option>
+                <option value="Silicone">Silicone</option>
+                <option value="Porta pronta 80x210">Porta pronta 80x210</option>
+              </select>
+            </div>
+
+            <!-- Tipo de movimentação. Django: {{ form.tipo }} (radio) -->
+            <div class="mb-3">
+              <label class="form-label d-block">Tipo <span class="text-danger">*</span></label>
+              <div class="btn-group w-100" role="group" aria-label="Tipo de movimentação">
+                <input type="radio" class="btn-check" name="movTipo" id="tipoEntrada" value="entrada">
+                <label class="btn btn-outline-success" for="tipoEntrada"><i class="bi bi-arrow-down-circle me-1"></i>Entrada</label>
+
+                <input type="radio" class="btn-check" name="movTipo" id="tipoSaida" value="saida">
+                <label class="btn btn-outline-danger" for="tipoSaida"><i class="bi bi-arrow-up-circle me-1"></i>Saída</label>
+              </div>
+            </div>
+
+            <div class="row g-3">
+              <div class="col-6">
+                <label for="movQuantidade" class="form-label">Quantidade <span class="text-danger">*</span></label>
+                <input type="number" class="form-control" id="movQuantidade" min="1" step="1" required>
+              </div>
+              <div class="col-6">
+                <label for="movData" class="form-label">Data <span class="text-danger">*</span></label>
+                <input type="date" class="form-control" id="movData" required>
+              </div>
+            </div>
+
+            <!-- Motivo: exibido somente quando o tipo for SAÍDA.
+                 Django: campo {{ form.motivo }} condicionado ao tipo no formulário/JS -->
+            <div class="mb-3 mt-3 d-none" id="blocoMotivo">
+              <label for="movMotivo" class="form-label">Motivo <span class="text-danger">*</span></label>
+              <select class="form-select" id="movMotivo" required>
+                <option value="">Selecione o motivo...</option>
+                <option value="producao">Uso em produção</option>
+                <option value="perda_dano">Perda ou dano</option>
+                <option value="ajuste_inventario">Ajuste de inventário</option>
+              </select>
+            </div>
+
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Confirmar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/sidebar.js"></script>
+  <script>
+    // ---- Cadastro / edição de material ----
+    // Django: form via POST; no mockup inserimos a linha na tabela.
+
+    function abrirMaterial(modo, botao) {
+      var titulo = document.getElementById('tituloModalMaterial');
+      var nome = document.getElementById('matNome');
+      var descricao = document.getElementById('matDescricao');
+      var unidade = document.getElementById('matUnidade');
+      var categoria = document.getElementById('matCategoria');
+      var valor = document.getElementById('matValor');
+      var minima = document.getElementById('matMinima');
+
+      if (modo === 'novo') {
+        titulo.textContent = 'Cadastrar material';
+        document.getElementById('formMaterial').reset();
+        minima.value = 1;
+      } else {
+        titulo.textContent = 'Editar material';
+        var linha = botao.closest('tr');
+        nome.value = linha.querySelector('.col-nome').textContent;
+        unidade.value = linha.querySelector('.col-unidade').textContent;
+        categoria.value = linha.querySelector('.col-categoria').textContent;
+        valor.value = paraNumero(linha.querySelector('.col-preco').textContent);
+        minima.value = linha.querySelector('.col-min').textContent;
+        // No mockup, descrição não é rastreada por linha; em produção viria do objeto {{ material }}.
+        descricao.value = '';
+      }
+    }
+
+    document.getElementById('formMaterial').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var nome = document.getElementById('matNome').value.trim();
+      var unidade = document.getElementById('matUnidade').value;
+      var categoria = document.getElementById('matCategoria').value || 'Outros';
+      var valor = parseFloat(document.getElementById('matValor').value) || 0;
+      var minima = parseInt(document.getElementById('matMinima').value) || 0;
+      if (!nome) return;
+
+      // Django: redireciona/atualiza via POST. No mockup, insere a linha na tabela.
+      var tbody = document.querySelector('#tabelaMateriais tbody');
+      var num = tbody.rows.length + 1;
+      var novaLinha = document.createElement('tr');
+      novaLinha.dataset.nome = nome;
+      novaLinha.innerHTML =
+        '<td>' + num + '</td>' +
+        '<td class="col-nome">' + escapeHtml(nome) + '</td>' +
+        '<td class="col-categoria">' + escapeHtml(categoria) + '</td>' +
+        '<td class="col-unidade">' + unidade + '</td>' +
+        '<td class="col-qtd text-end">0</td>' +
+        '<td class="col-min text-end">' + minima + '</td>' +
+        '<td class="col-preco text-end">' + formatarMoeda(valor) + '</td>' +
+        '<td class="col-total text-end">' + formatarMoeda(0) + '</td>' +
+        '<td class="col-status"><span class="badge rounded-pill text-bg-danger">Abaixo do mínimo</span></td>' +
+        '<td class="text-end"><button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalMaterial" onclick="abrirMaterial(\'editar\', this)" title="Editar material"><i class="bi bi-pencil"></i></button></td>';
+      tbody.prepend(novaLinha);
+
+      bootstrap.Modal.getInstance(document.getElementById('modalMaterial')).hide();
+      mostrarAlerta('Material "' + nome + '" salvo.');
+    });
+
+    // ---- Movimentação (entrada / saída) ----
+    // Django: POST para a view de movimentação; aqui apenas simulamos.
+
+    function definirTipo(tipo) {
+      var radio = document.getElementById(tipo === 'entrada' ? 'tipoEntrada' : 'tipoSaida');
+      radio.checked = true;
+      document.getElementById('tituloModalMovimentacao').textContent =
+        'Registrar ' + (tipo === 'entrada' ? 'entrada' : 'saída');
+      // Motivo visível somente para saída
+      document.getElementById('blocoMotivo').classList.toggle('d-none', tipo !== 'saida');
+      document.getElementById('movMotivo').removeAttribute('required');
+      if (tipo === 'saida') document.getElementById('movMotivo').setAttribute('required', '');
+      // Data padrão = hoje
+      document.getElementById('movData').value = new Date().toISOString().slice(0, 10);
+    }
+
+    document.getElementById('formMovimentacao').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var nome = document.getElementById('movMaterial').value;
+      var tipo = document.querySelector('input[name="movTipo"]:checked');
+      if (!nome || !tipo) return;
+      var qtd = parseInt(document.getElementById('movQuantidade').value) || 0;
+      if (qtd <= 0) return;
+      tipo = tipo.value;
+
+      // Atualiza a quantidade e o valor total na tabela (simulação da persistência).
+      var linha = Array.prototype.find.call(
+        document.querySelectorAll('#tabelaMateriais tbody tr'),
+        function (r) { return r.dataset.nome === nome; }
+      );
+      if (linha) {
+        var celQtd = linha.querySelector('.col-qtd');
+        var atual = parseInt(celQtd.textContent) || 0;
+        var nova = tipo === 'entrada' ? atual + qtd : atual - qtd;
+        if (nova < 0) nova = 0;
+        celQtd.textContent = nova;
+
+        var preco = paraNumero(linha.querySelector('.col-preco').textContent);
+        linha.querySelector('.col-total').textContent = formatarMoeda(nova * preco);
+
+        var minima = parseInt(linha.querySelector('.col-min').textContent) || 0;
+        var badge = nova <= minima
+          ? '<span class="badge rounded-pill text-bg-danger">Abaixo do mínimo</span>'
+          : '<span class="badge rounded-pill text-bg-success">OK</span>';
+        linha.querySelector('.col-status').innerHTML = badge;
+      }
+
+      // Adiciona a movimentação ao histórico (aba Movimentações).
+      var motivo = document.getElementById('movMotivo').value;
+      var movTbody = document.querySelector('#tabelaMovimentacoes tbody');
+      var num = movTbody.rows.length + 1;
+      var data = document.getElementById('movData').value;
+      var dataTexto = data ? new Date(data + 'T00:00:00').toLocaleDateString('pt-BR') : '—';
+      var badgeTipo = tipo === 'entrada'
+        ? '<span class="badge rounded-pill text-bg-success"><i class="bi bi-arrow-down-circle me-1"></i>Entrada</span>'
+        : '<span class="badge rounded-pill text-bg-danger"><i class="bi bi-arrow-up-circle me-1"></i>Saída</span>';
+      var novaLinha = document.createElement('tr');
+      novaLinha.dataset.tipo = tipo;
+      novaLinha.innerHTML =
+        '<td>' + num + '</td>' +
+        '<td>' + dataTexto + '</td>' +
+        '<td>' + badgeTipo + '</td>' +
+        '<td>' + escapeHtml(nome) + '</td>' +
+        '<td class="text-end">' + qtd + '</td>' +
+        '<td>' + (tipo === 'saida' ? escapeHtml(MOTIVOS[motivo] || motivo) : '—') + '</td>';
+      movTbody.prepend(novaLinha);
+      document.getElementById('contadorMovimentacoes').textContent =
+        'Mostrando 1–' + movTbody.rows.length + ' de ' + movTbody.rows.length + ' movimentações';
+
+      bootstrap.Modal.getInstance(document.getElementById('modalMovimentacao')).hide();
+      var descricao = (tipo === 'entrada' ? 'Entrada' : 'Saída') + ' de ' + qtd + ' de "' + nome + '" registrada.';
+      mostrarAlerta(descricao);
+    });
+
+    // ---- Utilidades ----
+    var MOTIVOS = {
+      'producao': 'Uso em produção',
+      'perda_dano': 'Perda ou dano',
+      'ajuste_inventario': 'Ajuste de inventário'
+    };
+
+    function formatarMoeda(valor) {
+      return 'R$ ' + Number(valor || 0).toLocaleString('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    function paraNumero(texto) {
+      return parseFloat(String(texto).replace('R$', '').replace(/\./g, '').replace(',', '.')) || 0;
+    }
+
+    function escapeHtml(texto) {
+      return String(texto)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function mostrarAlerta(mensagem) {
+      var alerta = document.getElementById('alertaEstoque');
+      document.getElementById('textoAlertaEstoque').textContent = mensagem;
+      alerta.classList.remove('d-none');
+      setTimeout(function () { alerta.classList.add('d-none'); }, 4000);
+    }
+
+    // ---- Permissões: ações da tela de estoque ----
+    // Django: {% if perms.estoque.add_material %} / {% if perms.estoque.add_movimentacao %}
+    var PERMISSAO_ESTOQUE = ['administrador', 'gestor', 'operacional-estoque'];
+
+    function aplicarPermissaoEstoque(perfil) {
+      var temAcesso = PERMISSAO_ESTOQUE.indexOf(perfil) !== -1;
+      ['btnNovoMaterial', 'btnRegistrarEntrada', 'btnRegistrarSaida'].forEach(function (id) {
+        var botao = document.getElementById(id);
+        if (botao) botao.disabled = !temAcesso;
+      });
+    }
+    window.inosysAtualizarCards = aplicarPermissaoEstoque;
+
+    // ---- Estado inicial ----
+    aplicarPermissaoEstoque(window.inosysObterPerfil());
+  </script>
+</body>
+</html>
